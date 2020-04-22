@@ -26,76 +26,76 @@ int triggered;
 char*
 load_status(char* status)
 {
-	static char str[5];
-	int n, i, done = 0;
-	const char* label = "load:";
+    static char str[5];
+    int n, i, done = 0;
+    const char* label = "load:";
 
-	for(i = 0; label[i] && lengthLeft > 1; ++i)
-	{
-		*status = label[i];
-		++status;
-		--lengthLeft;
-	}
+    for(i = 0; label[i] && lengthLeft > 1; ++i)
+    {
+        *status = label[i];
+        ++status;
+        --lengthLeft;
+    }
 
-	if (load_fd >= 0)
-	{
-		lseek(load_fd, 0, SEEK_SET);
-		while (!done)
-		{
-			n = read(load_fd, (void*)str, 5);
-			for(i = 0; i < 5 && lengthLeft > 1; ++i)
-			{
-				if(str[i] == ' ')
-				{
-					done = 1;
-					break;
-				}
-				*status = str[i];
-				++status;
-				--lengthLeft;
-			}
-		}
-	}
-	return status;
+    if (load_fd >= 0)
+    {
+        lseek(load_fd, 0, SEEK_SET);
+        while (!done)
+        {
+            n = read(load_fd, (void*)str, 5);
+            for(i = 0; i < 5 && lengthLeft > 1; ++i)
+            {
+                if(str[i] == ' ')
+                {
+                    done = 1;
+                    break;
+                }
+                *status = str[i];
+                ++status;
+                --lengthLeft;
+            }
+        }
+    }
+    return status;
 }
 
 char*
 timedate_status(char* status)
 {
-	char str_date[256];
-	int length = 256;
-	time_t rawtime;
-	struct tm timeinfo;
-	struct timespec ts;
+    char str_date[256];
+    int length = 256;
+    time_t rawtime;
+    struct tm timeinfo;
+    struct timespec ts;
 
-	clock_gettime(CLOCK_REALTIME, &ts);
+    clock_gettime(CLOCK_REALTIME, &ts);
     tzset();
     if (localtime_r(&(ts.tv_sec), &timeinfo) == NULL)
         return status;
-	if (lengthLeft < length)
-		length = lengthLeft - 1;
-	strftime(status, length, "%a %d %b %H:%M", &timeinfo);
-	while (*status)
-	{
-		++status;
-		--lengthLeft;
-	}
-	return status;
+    if (lengthLeft < length)
+        length = lengthLeft - 1;
+    strftime(status, length, "%a %d %b %H:%M", &timeinfo);
+    while (*status)
+    {
+        ++status;
+        --lengthLeft;
+    }
+    return status;
 }
 
 char*
 separator_status(char* status)
 {
-	const char* separator = " \u239C ";
-	int i = 0;
+    const char* separator = " \u239C ";
+    int i = 0;
 
-	while (separator[i] && lengthLeft > 1)
-	{
-		*status = separator[i++];
-		--lengthLeft;
-		++status;
-	}
-	return status;
+    while (separator[i] && lengthLeft > 1)
+    {
+        *status = separator[i++];
+        --lengthLeft;
+        ++status;
+    }
+    return status;
 }
 
 void
@@ -121,10 +121,10 @@ wait_until (struct timespec time)
 void
 sleep_to_next()
 {
-	struct timespec ts;
-	static const long unit_sec = 60;
+    struct timespec ts;
+    static const long unit_sec = 60;
 
-	clock_gettime(CLOCK_REALTIME, &ts);
+    clock_gettime(CLOCK_REALTIME, &ts);
     ts.tv_sec = (ts.tv_sec / unit_sec + 1) * unit_sec;
     ts.tv_nsec = 0;
     wait_until(ts);
@@ -133,29 +133,29 @@ sleep_to_next()
 void
 setrootname(char* status)
 {
-	XStoreName(dpy, root, status);
-	XSync(dpy, False);
+    XStoreName(dpy, root, status);
+    XSync(dpy, False);
 }
 
 void
 build_status(char* status)
 {
-	char *pstatus = status;
+    char *pstatus = status;
 
-	lengthLeft = maxLength;
-	pstatus = load_status(pstatus);
-	pstatus = separator_status(pstatus);
-	pstatus = timedate_status(pstatus);
-	*pstatus = 0;
+    lengthLeft = maxLength;
+    pstatus = load_status(pstatus);
+    pstatus = separator_status(pstatus);
+    pstatus = timedate_status(pstatus);
+    *pstatus = 0;
 }
 
 void
 update_status()
 {
-	char status[maxLength];
+    char status[maxLength];
 
-	build_status(status);
-	setrootname(status);
+    build_status(status);
+    setrootname(status);
 }
 
 void
@@ -180,12 +180,12 @@ clean_exit()
 void
 init_signals()
 {
-	struct sigaction sa;
+    struct sigaction sa;
 
     memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = signal_wait;
-	if (sigaction(SIGHUP, &sa, NULL) < 0)
-		printf("failed to set HUP signal\n");
+    sa.sa_handler = signal_wait;
+    if (sigaction(SIGHUP, &sa, NULL) < 0)
+        printf("failed to set HUP signal\n");
     sa.sa_handler = clean_exit;
     if (sigaction(SIGTERM, &sa, NULL) < 0)
         printf("failed to set TERM signal\n");
@@ -208,25 +208,25 @@ init_pthread()
 int
 init_x11()
 {
-	int screen;
+    int screen;
 
-	dpy = XOpenDisplay(NULL);
-	if (!dpy)
-		return 0;
-	screen = DefaultScreen(dpy);
-	root = RootWindow(dpy, screen);
-	return 1;
+    dpy = XOpenDisplay(NULL);
+    if (!dpy)
+        return 0;
+    screen = DefaultScreen(dpy);
+    root = RootWindow(dpy, screen);
+    return 1;
 }
 
 void
 init()
 {
-	if (!init_x11())
+    if (!init_x11())
     {
         fprintf(stderr, "Failed to open DISPLAY\n");
-		exit(1);
+        exit(1);
     }
-	load_fd = open("/proc/loadavg",  O_RDONLY);
+    load_fd = open("/proc/loadavg",  O_RDONLY);
     init_signals();
     init_pthread();
 }
@@ -234,13 +234,13 @@ init()
 void
 main(int argc, char *argv[])
 {
-	localargv = argv;
-	init();
-	while (!must_quit)
-	{
-		update_status();
-		sleep_to_next();
-	}
+    localargv = argv;
+    init();
+    while (!must_quit)
+    {
+        update_status();
+        sleep_to_next();
+    }
     pthread_cond_destroy(&condition);
     pthread_mutex_destroy(&mutex);
     XCloseDisplay(dpy);
